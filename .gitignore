@@ -1,0 +1,42 @@
+# Test files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.coverage
+htmlcov/
+*.cover
+.hypothesis/
+
+# Virtual environment
+.venv/
+venv/
+ENV/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Application
+*.log
+chroma_db/
+chroma_db_streamlit/
+test_chroma_db/
+pdfs/*.pdf
+
+# Environment variables
+.env
+
+# Build
+dist/
+build/
+*.egg-info/

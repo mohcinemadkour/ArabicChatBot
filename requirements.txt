@@ -1,0 +1,25 @@
+# Core dependencies
+ollama
+langchain
+langchain-community
+langchain-chroma
+pypdf
+sentence-transformers
+chromadb
+python-dotenv
+streamlit
+pytesseract
+pymupdf
+pillow
+
+# Development dependencies
+pytest>=7.4.0
+pytest-cov>=4.1.0
+black>=23.0.0
+flake8>=6.0.0
+mypy>=1.4.0
+
+# Arabic Support
+arabic-reshaper
+python-bidi
+langdetect
