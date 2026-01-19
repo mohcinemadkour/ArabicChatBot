@@ -120,6 +120,7 @@ TRANSLATIONS = {
 
 PROMPTS = {
     'ar': """استخدم المعلومات التالية للإجابة على السؤال.
+يجب أن تكون الإجابة باللغة العربية دائماً.
 إذا كنت لا تعرف الإجابة، قل ذلك ببساطة، ولا تحاول اختلاق إجابة.
 اجعل الإجابة موجزة في ثلاث جمل كحد أقصى.
 
@@ -130,6 +131,7 @@ PROMPTS = {
 الإجابة المفيدة:""",
 
     'en': """Use the following pieces of context to answer the question at the end.
+You must respond in English.
 If you don't know the answer, just say that you don't know, don't try to make up an answer.
 Use three sentences maximum and keep the answer concise.
 

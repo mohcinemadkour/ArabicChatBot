@@ -61,7 +61,7 @@ class RAGChatbot:
         self.embedding_model = embedding_model or config.DEFAULT_EMBEDDING_MODEL
         self.persist_directory = persist_directory or config.CHROMA_DB_CLI
         temperature = temperature or config.LLM_TEMPERATURE
-        self.language = language or config.DEFAULT_LANGUAGE
+        self.language = language # Keep as provided (None means Auto)
         
         logger.info(f"Initializing RAGChatbot with model: {self.model_name}, language: {self.language}")
         
@@ -89,11 +89,14 @@ class RAGChatbot:
         )
         
         # Set default prompt based on language settings
-        # We start with bilingual prompt if auto-detect is on, otherwise language specific
-        if config.ENABLE_AUTO_DETECT:
+        # If language is explicitly provided, use it. Otherwise fallback to bilingual if auto-detect is on.
+        if self.language:
+            self.current_prompt_template = PROMPTS.get(self.language, PROMPTS['en'])
+        elif config.ENABLE_AUTO_DETECT:
             self.current_prompt_template = BILINGUAL_PROMPT
         else:
-            self.current_prompt_template = PROMPTS.get(self.language, PROMPTS['en'])
+            self.current_prompt_template = PROMPTS.get(config.DEFAULT_LANGUAGE, PROMPTS['en'])
+            self.language = config.DEFAULT_LANGUAGE # Set for UI consistency
         
         self.prompt = PromptTemplate(
             template=self.current_prompt_template,
@@ -402,7 +405,7 @@ class RAGChatbot:
                 
             # Clear memory on language switch to avoid context confusion
             self.clear_memory()
-            logger.info(f"Language switched to {language}")
+            logger.info(f"Language switched to {language}. Prompt updated.")
     
     def clear_memory(self) -> None:
         """Clear conversation memory."""
