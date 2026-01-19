@@ -174,6 +174,46 @@ def normalize_arabic_text(text: str) -> str:
     return text
 
 
+def safe_delete_directory(directory_path: str, max_retries: int = 3, delay: float = 1.0) -> bool:
+    """
+    Safely delete a directory, handling potential file lock errors on Windows.
+    
+    Args:
+        directory_path: Path to the directory to delete
+        max_retries: Maximum number of retry attempts
+        delay: Delay between retries in seconds
+        
+    Returns:
+        True if deleted successfully, False otherwise
+    """
+    import shutil
+    import time
+    import os
+    
+    logger = logging.getLogger('chatbox')
+    
+    if not os.path.exists(directory_path):
+        return True
+        
+    for attempt in range(max_retries):
+        try:
+            if os.path.exists(directory_path):
+                shutil.rmtree(directory_path)
+            logger.info(f"Successfully deleted {directory_path}")
+            return True
+        except PermissionError as e:
+            if attempt < max_retries - 1:
+                logger.warning(f"Attempt {attempt + 1} to delete {directory_path} failed: {e}. Retrying in {delay}s...")
+                time.sleep(delay)
+            else:
+                logger.error(f"Failed to delete {directory_path} after {max_retries} attempts: {e}")
+        except Exception as e:
+            logger.error(f"Error deleting {directory_path}: {e}")
+            break
+            
+    return False
+
+
 def reshape_arabic_text(text: str) -> str:
     """
     Reshape Arabic text and apply bidirectional algorithm for proper display.

@@ -11,7 +11,7 @@ import streamlit as st
 
 import config
 from main import RAGChatbot
-from utils import get_available_ollama_models, setup_logging, get_ui_text
+from utils import get_available_ollama_models, setup_logging, get_ui_text, safe_delete_directory
 import shutil
 
 # Setup logging
@@ -181,8 +181,10 @@ def initialize_chatbot(model_name, lang_code, _pdf_files):
     try:
         # Reset vector store on every run
         if os.path.exists(config.CHROMA_DB_STREAMLIT):
-            shutil.rmtree(config.CHROMA_DB_STREAMLIT)
-            logger.info("Previous vector store cleared for fresh run")
+            if safe_delete_directory(config.CHROMA_DB_STREAMLIT):
+                logger.info("Previous vector store cleared for fresh run")
+            else:
+                logger.warning("Could not clear previous vector store, will attempt to reuse/overwrite")
 
         logger.info("Initializing chatbot and processing PDFs...")
         chatbot_instance = RAGChatbot(

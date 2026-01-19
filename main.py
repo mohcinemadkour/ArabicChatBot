@@ -27,6 +27,7 @@ from utils import (
     validate_document_size,
     detect_language, 
     reshape_arabic_text,
+    normalize_arabic_text,
     get_ui_text,
     extract_text_with_ocr
 )
@@ -221,6 +222,15 @@ class RAGChatbot:
         
         chunks = text_splitter.split_documents(documents)
         logger.info(f"Split into {len(chunks)} chunks")
+
+        # Arabic Normalization: Remove diacritics (Tashkeel)
+        for chunk in chunks:
+            # Detect language of the chunk or use the chatbot's language
+            chunk_lang = detect_language(chunk.page_content) if config.ENABLE_AUTO_DETECT else self.language
+            
+            if chunk_lang == 'ar':
+                chunk.page_content = normalize_arabic_text(chunk.page_content)
+                
         return chunks
     
     def create_vectorstore(self, chunks: List, persist: bool = True) -> None:
