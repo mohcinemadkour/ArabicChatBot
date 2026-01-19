@@ -32,6 +32,7 @@ chroma_db/
 chroma_db_streamlit/
 test_chroma_db/
 pdfs/*.pdf
+*.png
 
 # Environment variables
 .env
