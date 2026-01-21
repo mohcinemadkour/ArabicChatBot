@@ -58,7 +58,9 @@ TRANSLATIONS = {
         
         # Language
         'language_select': '🌐 Language / اللغة',
-        'switched_lang': '✓ Switched language to English'
+        'switched_lang': '✓ Switched language to English',
+        'indexed_docs': '📚 Indexed Documents',
+        'no_indexed_docs': 'No documents currently indexed.'
     },
     'ar': {
         # UI Labels
@@ -114,7 +116,9 @@ TRANSLATIONS = {
         
         # Language
         'language_select': '🌐 اللغة / Language',
-        'switched_lang': '✓ تم تغيير اللغة إلى العربية'
+        'switched_lang': '✓ تم تغيير اللغة إلى العربية',
+        'indexed_docs': '📚 المستندات المفهرسة',
+        'no_indexed_docs': 'لا توجد مستندات مفهرسة حالياً.'
     }
 }
 

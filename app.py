@@ -145,9 +145,20 @@ with st.sidebar:
         if st.button(get_ui_text('reset_db', lang), use_container_width=True):
             st.cache_resource.clear()
             st.session_state.chatbot = None
-            logger.info("Vector store reset")
+            safe_delete_directory(config.CHROMA_DB_STREAMLIT)
+            logger.info("Vector store reset and files deleted")
             st.success("✓ Reset complete")
             st.rerun()
+            
+    # Display Indexed Documents
+    if 'chatbot' in st.session_state and st.session_state.chatbot:
+        with st.expander(get_ui_text('indexed_docs', lang), expanded=False):
+            indexed_sources = st.session_state.chatbot.get_indexed_sources()
+            if indexed_sources:
+                for src in indexed_sources:
+                    st.text(f"📖 {src}")
+            else:
+                st.info(get_ui_text('no_indexed_docs', lang))
     
     # Display statistics
     if 'chatbot' in st.session_state and st.session_state.chatbot:
@@ -172,21 +183,14 @@ if 'messages' not in st.session_state:
 
 # Automated Chatbot Initialization and Processing
 @st.cache_resource(show_spinner=False)
-def initialize_chatbot(model_name, lang_code, _pdf_files):
+def initialize_chatbot(model_name, lang_code, _pdf_hashes):
     """
     Initialize chatbot and process PDFs. 
     Cached to prevent reloading unless arguments change.
-    _pdf_files arg is just for cache invalidation (list of filenames).
+    _pdf_hashes arg is just for cache invalidation (list of file hashes).
     """
     try:
-        # Reset vector store on every run
-        if os.path.exists(config.CHROMA_DB_STREAMLIT):
-            if safe_delete_directory(config.CHROMA_DB_STREAMLIT):
-                logger.info("Previous vector store cleared for fresh run")
-            else:
-                logger.warning("Could not clear previous vector store, will attempt to reuse/overwrite")
-
-        logger.info("Initializing chatbot and processing PDFs...")
+        logger.info(f"Initializing chatbot for language: {lang_code}...")
         chatbot_instance = RAGChatbot(
             model_name=model_name,
             embedding_model=model_name,
@@ -194,12 +198,22 @@ def initialize_chatbot(model_name, lang_code, _pdf_files):
             language=lang_code
         )
         
-        # Always check/load documents at startup
-        documents = chatbot_instance.load_pdfs(config.PDF_DIRECTORY)
-        # Check if we need to process (simple check: if vectorstore empty or force)
-        # For now, we follow the existing logic: process and persist
-        chunks = chatbot_instance.process_documents(documents)
-        chatbot_instance.create_vectorstore(chunks, persist=True)
+        # 1. Try to load existing vector store first
+        if chatbot_instance.load_existing_vectorstore():
+            logger.info("Loaded existing vector store, skipping re-indexing.")
+        else:
+            # 2. If no vector store, load and process PDFs
+            logger.info("No existing vector store found or load failed. Starting indexing...")
+            documents = chatbot_instance.load_pdfs(config.PDF_DIRECTORY)
+            
+            if documents:
+                chunks = chatbot_instance.process_documents(documents)
+                chatbot_instance.create_vectorstore(chunks, persist=True)
+                logger.info("Vector store created and persisted.")
+            else:
+                logger.warning("No PDF documents found to index.")
+        
+        # 3. Always create the QA chain
         chatbot_instance.create_qa_chain()
         
         return chatbot_instance

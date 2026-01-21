@@ -311,6 +311,34 @@ class RAGChatbot:
         logger.info("No existing vector store found")
         return False
     
+    def get_indexed_sources(self) -> List[str]:
+        """
+        Get a unique list of document sources (filenames) currently in the vector store.
+        
+        Returns:
+            List of unique source filenames
+        """
+        if not hasattr(self, 'vectorstore') or self.vectorstore is None:
+            return []
+            
+        try:
+            # Get all metadata from the collection
+            data = self.vectorstore.get()
+            if not data or 'metadatas' not in data:
+                return []
+                
+            # Extract unique sources and format them (keeping only basename)
+            sources = set()
+            for metadata in data['metadatas']:
+                if metadata and 'source' in metadata:
+                    source_path = metadata['source']
+                    sources.add(os.path.basename(source_path))
+            
+            return sorted(list(sources))
+        except Exception as e:
+            logger.error(f"Error getting indexed sources: {e}")
+            return []
+
     def create_qa_chain(self) -> None:
         """
         Create the QA chain with retrieval and conversation memory.
